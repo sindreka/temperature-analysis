@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+  </head>
+
+  <body>
+  <h1> må legge inn felt for å søke etter steder </h1>
+  
+    <div class="myDiv"> </div>
+
+    
+   
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="explain-tab" data-toggle="tab" href="#explain" role="tab" aria-controls="explain" aria-selected="true" onclick="updateGraph(-1)" >Forklaring</a>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="explain" role="tabpanel" aria-labelledby="explain-tab">    <h1>Forklaring av statistisk analyse</h1>
+    En statistisk analyse betyr i dette tilfellet en regresjonsalalyse. Regresjonsanalyser brukes for å finne ut om det finnes trender i dataset, i dette tilfellet skal vi fastslå om temperaturen endrer seg med tiden, eller er omtrent det samme. 
+    En lineær funksjon kan skrives på følgende form:
+    $$ y(x) = a x + b $$
+    Vi er dermed interessert i å finne en \(a\) og \(b\) som passer best mulig med dataen vi har. Siden målt data kan inneholde feil, og ha tilfeldig avvik setter vi et merke på verdiene vi estimerer, sånn som dette:
+    $$ \hat{y}(x) = \hat{a} x + \hat{b} $$ 
+    Forholdet mellom ekte verdi og estimert verdi er gitt som følger:
+    $$ \epsilon_i = y_i - \hat{y}_i $$
+    
+    For å finne en linje som passer best mulig gjennom punktene vi har, velger vi å bruke følgende verdier for \( \hat{a} \) og \( \hat{b} \) (om du er interessert i matten kan du lese mer om det her)\cite something: 
+    $$ \hat{a} = \frac{\sum_{i=1}^ny_ix_i-\bar{x}\bar{y}}{\sum_{i=1}^n(x_i-\bar{x})^2} $$
+    og 
+    $$ \hat{b} = \bar{y} - \hat{a} \bar{x}$$
+    hvor 
+    $$ \bar{x} =\frac{1}{n} \sum_{i=1}^n x_i, \quad \bar{y} = \frac{1}{n} \sum_{i=1}^n y_i $$
+    For å teste om vi kan stole på at stigningen i \(\hat{y}(x)\) er rett foretar man en statistisk test; Altså finne ut om det er sannsynlig at \(\alpha = 0\), og at vi fikk et annet resultat pga tilfeldige avvik og målefeil. 
+    En slik test formuleres på følgende måte:
+    $$\begin{align}H_0&: \hat{a} > 0 \\ H_1&: \hat{a} \leq 0 \end{align}$$
+    Den statistiske testen vi bruker her er (igjen, om du vil forstå matten bak kan du se her):
+    $$T_0 = \frac{\hat{a}-a}{se(\hat{a})}$$
+    hvor 
+    $$se(\hat{a}) = \sqrt{(\frac{\sum_{i = 1}^n(y_i-\hat{y}_i)}{\sum_{i=1}^n(x_i-\bar{x})^2})}$$
+    om \( -t_{\alpha/2,n-2} < T_0 < t_{\alpha/2,n-2} \) Så aksepterer vi (\ H_0 \), altså teorien om at \(a = 0\), ellers antar vi at \(\hat{a} \neq 0 \) . Vi lager altså et intervall med mulige verdier for \( a \), gitt på følgende vis: 
+    $$ \hat{a}-t_{\alpha/2,n-2}*se(\hat{a}) \le a \le \hat{a}+t_{\alpha/2,n-2}*se(\hat{a}) $$
+    Verdien for t_{\alpha/2,n-2} er litt kryptisk deffinert, men angir et intervall med verdier som \(\hat{a}\) kan være når vi er \(\alpha\%\) sikre på resultatet. Om 0 er i dette intervallet så beholder vi altså \ /H_0 \). Vi har valgt å være \(95%\) sikre her, som betyr at det i snitt oppstår en feil 1 av 20 ganger. 
+    <p>Se nå på de forskjllige månedene for å se på dette i parksis. </p>
+    
+    Forklare residual, bytte ut alpha med a hatt, og beta med b hatt. Forklare ting bedre: 
+    
+    (må kanskje først forstå dette? Tror jeg forstår nok nå)</div>
+</div>
+Takk til <a href="http://reliawiki.com/index.php/Simple_Linear_Regression_Analysis">http://reliawiki.com</a> for forklarende eksempler!
+  </body>
+  
+<script>
+function CalcStats (data) {
+  var s = "";
+  s += "<h1> Statistisk test for " + long_months[data[0].month-1] + "</h1>";
+  x_bar = d3.mean(data,function(d) {return +d.temp});
+  y_bar = d3.mean(data,function(d) {return +d.year});
+  
+  m1 = 0;
+  m2 = 0;
+  m3 = 0;
+  data.forEach( function (d){
+    m1 += d.temp*d.year-x_bar*y_bar;
+    m2 += (d.temp-x_bar)**2;
+  });
+  a_hat = m1/m2;
+  b_hat = y_bar - a_hat*x_bar;
+  
+  data.forEach( function (d) {
+    m3 += d.year - (a_hat*d.year + b_hat);
+  });
+  se = (m3/m2)**0.5;
+  alpha = 0.05;
+  t_value = jStat.studentt.inv( alpha/2, data.length );
+  //console.log(t_value);
+  a_hat_max = a_hat + Math.abs(t_value) * se;
+  a_hat_min = a_hat - Math.abs(t_value) * se;
+  // (Math.round(a_hat*100)/100).toString()
+  // vil plotte slik at min 95% av prikkenen er innenfor 
+  s += "Når vi setter inn tallene fra grafen inn i den statistiske testen får vi "
+  s += "\( \hat{a} = " + a_hat + "\) og ";
+  s += "\( \hat{b} = " + b_hat + "\)";
+  s += "Dette gir: "
+  s += "$$ \hat{y} = \hat{a}x+\hat{b} = " + a_hat + "x" + "+" + b_hat + "$$";
+  
+  s += "Vi får også at \( se(a_hat)*t = " + se * t_value + " \), dette betyr at";
+  s += "$$ a = " + a_hat + " \pm " + se * t_value + " $$";
+  s += "Som gir et intevall: \( " + a_hat_min + "\le a \le " + a_hat_max + "\)";
+  if (a_hat_min > 0) {
+    s += "Altså stiger temperaturen med 95 % sikkerhet";
+  } else {
+    s += "Altså er vi usikkre på om temperaturen stiger eller ikke.";
+  }
+  // Sjekke om a_hat er større enn null, og skrive ut hva det betyr, ellers skrive ut hva som skjer om a_hat er mindre enn null.
+  // må finne ut hvordan jeg skal hatte ting. 
+  // Skrive en fummy text for dette!
+  return s;
+}
+function updateGraph(index) {
+  console.log("this happens on click");
+  console.log(index);
+}
+  </script>
+  
+  <script>
+  var width = 500;
+  var height = 500;
+  var margin = 80;
+  
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var long_months = ["Januar","Februar","Mars","April","Mai","Juni","Juli","August","September","Oktober","November","Desember"];
+  
+  data = [[{year: 2007,month: 3, temp: 4},
+    {year: 2008,month: 3, temp: 5},
+    {year: 2009,month: 3, temp: 8},
+    {year: 2010,month: 3, temp: 13},],
+    [{year: 2007,month: 4, temp: 14},
+    {year: 2008,month: 4, temp: 15},
+    {year: 2009,month: 4, temp: 18},
+    {year: 2010,month: 4, temp: 11},],
+    [{year: 2007,month: 5, temp: 15},
+    {year: 2008,month: 5, temp: 16},
+    {year: 2009,month: 5, temp: 19},
+    {year: 2010,month: 5, temp: 12},]
+  ];
+    
+    var svg = d3.select(".myDiv")
+      .append("svg")
+      .attr("width",width+2*margin)
+      .attr("height",height+2*margin)
+      .append("g")
+        .attr("transform", "translate(" + margin + ")");
+        
+    var x = d3.scaleTime()
+      .range([0,width])
+      .domain(//[d3.min([].concat.apply([], data), function(d) { return d.year; }),
+              // d3.max([].concat.apply([], data), function(d) { return d.year; })
+              //]); //min year, max year
+              d3.extent([].concat.apply([], data), function(d) { return d.year; })
+              );
+      
+    var y = d3.scaleLinear()
+      .range([0,height])
+      .domain([d3.max([].concat.apply([], data), function(d) { return d.temp; })+1,
+               d3.min([].concat.apply([], data), function(d) { return d.temp; })-1,
+              ]);
+      
+    var valueline = d3.line()
+      .x(function(d) {return x(d.year);})
+      .y(function(d) {return y(d.temp)});
+      
+      
+    svg.selectAll(".line")
+      .data(data)
+      .enter()
+        .append("path")
+        .style("fill", "none")
+        .style("stroke","black")
+        .style("stroke-width", "5")
+        .attr("d",valueline);
+        
+    svg.selectAll(".circle")
+      .data([].concat.apply([], data))
+      .enter()
+        .append("circle")
+        .attr("cx", function(d) {return x(d.year)})
+        .attr("cy", function(d) {return y(d.temp)})
+        .attr("r","5")
+        .style("fill", "yellow")
+        .style("stroke","black")
+        .style("stroke-width", "10");
+        
+    svg.selectAll(".text")
+      .data(data)
+      .enter()
+        .append("text")
+        .attr("x", function(d) {return x(d[0].year);})
+        .attr("y", function(d) {return y(d[0].temp);})
+        .attr("font-size", "30px")
+        .text(function(d) {return months[d[0].month-1]});
+        
+  
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+      
+    svg.append("text")
+      .attr("transform", "translate(" + width/2 + "," + (height + 40)+ ")")
+      .style("text-anchor","middle")
+      .text("Year");
+      
+    svg.append("g")
+      .call(d3.axisLeft(y));
+    
+    svg.append("text")
+      .attr("x",0 - (height / 2))
+      .attr("transform", "rotate(-90)")
+      .style("text-anchor","middle")
+      .text("Temperature");
+      
+    svg.append("text")
+      .attr("transform", "translate(" + width/2 + "," + (height + margin) + ")")
+      .style("text-anchor","middle")
+      .text("Grafen viser endring i temperatur for de forskjellige månedene over tid.");
+      
+    // add nav item
+    var nav = d3.select(".nav").selectAll(".li")
+        .data(data)
+        .enter()
+        .append("li")
+        .attr("class","nav-item")
+        .append("a")
+        .attr("class","nav-link")
+        .attr("id", function (d) {return months[d[0].month-1] + "-tab";})
+        .attr("data-toggle","tab")
+        .attr("href", function (d) {return "#" + months[d[0].month-1];} )
+        .attr("role", "tab")
+        .attr("aria-controls", function (d) {return months[d[0].month-1];})
+        .attr("aria-selected", "false")
+        .attr("onclick", function (d) {return "updateGraph(" + (d[0].month-1) + ")"})
+        .html(function (d) {return months[d[0].month-1];}) ;
+    
+    var pane = d3.select(".tab-content").selectAll(".div")
+      .data(data)
+      .enter()
+      .append("div")
+        .attr("class", "tab-pane fade")
+        .attr("id", function (d) {return months[d[0].month-1];})
+        .attr("role", "tabpanel")
+        .attr("aria-labelledby", function (d) {return months[d[0].month-1] + "-tab";})
+        .html(function (d) {return CalcStats(d);});
+        
+
+      
+  </script>
+
+</html>
+<!--
+TODO list:
+  - Make basic design (labels axis legends and plots) X
+  - Get data from data source (use frost.met.no) 
+  - Format data properly (the data from the data source)
+  - Include some statistics (a basic statistical test with confidence and introduction to the consept of statistical testing)X
+  - Figure text explaining the plot X
+  - Make graphs interactable/clickable/selectable (it should be possible to select which month to see statistical data for, colors light up when clicked )
+  - Prittify the design (jeei, this is supposed to be fun! Let's make it so!)
+  - Check if it is done (is there anything missing? Say thank you to frost.no, and cite your sources!) also thanks to statistics site and Jacob if he helped verify the statistics
+
+
+Your client ID is:
+07a7c3bb-8669-4253-ac39-c6fb21908dcc
+
+Your client Secret is:
+fc6d9d8f-8596-4e19-9624-a8b419806d1c
+-->
