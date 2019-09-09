@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+   <meta charset="UTF-8">
     <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
@@ -112,6 +113,7 @@ function updateGraph(index) {
   </script>
   
   <script>
+  data = d3.csv("\\data\\data.csv", function(data) {
   var width = 500;
   var height = 500;
   var margin = 80;
@@ -119,19 +121,8 @@ function updateGraph(index) {
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var long_months = ["Januar","Februar","Mars","April","Mai","Juni","Juli","August","September","Oktober","November","Desember"];
   
-  data = [[{year: 2007,month: 3, temp: 4},
-    {year: 2008,month: 3, temp: 5},
-    {year: 2009,month: 3, temp: 8},
-    {year: 2010,month: 3, temp: 13},],
-    [{year: 2007,month: 4, temp: 14},
-    {year: 2008,month: 4, temp: 15},
-    {year: 2009,month: 4, temp: 18},
-    {year: 2010,month: 4, temp: 11},],
-    [{year: 2007,month: 5, temp: 15},
-    {year: 2008,month: 5, temp: 16},
-    {year: 2009,month: 5, temp: 19},
-    {year: 2010,month: 5, temp: 12},]
-  ];
+
+    console.log(data);
     
     var svg = d3.select(".myDiv")
       .append("svg")
@@ -239,7 +230,7 @@ function updateGraph(index) {
         .attr("aria-labelledby", function (d) {return months[d[0].month-1] + "-tab";})
         .html(function (d) {return CalcStats(d);});
         
-
+});
       
   </script>
 

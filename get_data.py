@@ -1,4 +1,5 @@
 import requests
+import os
 
 client_id = '07a7c3bb-8669-4253-ac39-c6fb21908dcc'
 
@@ -29,7 +30,7 @@ data = r.json()["data"]
 for d in data:
     print(f'{d["referenceTime"].split("T")[0][:-3]} : {d["observations"][0]["value"]} {d["observations"][0]["unit"]} ' )
 
-with open("data.txt","w") as file:
+with open(os.path.join("data","data.csv"),"w") as file:
     file.write(f"date,temperature\n")
     for d in data:
         file.write(f"{d['referenceTime'].split('T')[0][:-3]},{d['observations'][0]['value']}\n")
