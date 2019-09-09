@@ -27,8 +27,12 @@ r = requests.get(endpoint, parameters, auth=(client_id,''))
 data = r.json()["data"]
 
 for d in data:
-    print(f'{d["referenceTime"]} : {d["observations"][0]["value"]} {d["observations"][0]["unit"]} ' )
+    print(f'{d["referenceTime"].split("T")[0][:-3]} : {d["observations"][0]["value"]} {d["observations"][0]["unit"]} ' )
 
+with open("data.txt","w") as file:
+    file.write(f"date,temperature\n")
+    for d in data:
+        file.write(f"{d['referenceTime'].split('T')[0][:-3]},{d['observations'][0]['value']}\n")
 
 
 
