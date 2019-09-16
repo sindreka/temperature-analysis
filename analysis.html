@@ -59,59 +59,6 @@
 Takk til <a href="http://reliawiki.com/index.php/Simple_Linear_Regression_Analysis">http://reliawiki.com</a> for forklarende eksempler!
   </body>
   
-<script>
-function CalcStats (data) {
-  var s = "";
-  s += "<h1> Statistisk test for " + long_months[data[0].month-1] + "</h1>";
-  x_bar = d3.mean(data,function(d) {return +d.temp});
-  y_bar = d3.mean(data,function(d) {return +d.year});
-  
-  m1 = 0;
-  m2 = 0;
-  m3 = 0;
-  data.forEach( function (d){
-    m1 += d.temp*d.year-x_bar*y_bar;
-    m2 += (d.temp-x_bar)**2;
-  });
-  a_hat = m1/m2;
-  b_hat = y_bar - a_hat*x_bar;
-  
-  data.forEach( function (d) {
-    m3 += d.year - (a_hat*d.year + b_hat);
-  });
-  se = (m3/m2)**0.5;
-  alpha = 0.05;
-  t_value = jStat.studentt.inv( alpha/2, data.length );
-  //console.log(t_value);
-  a_hat_max = a_hat + Math.abs(t_value) * se;
-  a_hat_min = a_hat - Math.abs(t_value) * se;
-  // (Math.round(a_hat*100)/100).toString()
-  // vil plotte slik at min 95% av prikkenen er innenfor 
-  s += "Når vi setter inn tallene fra grafen inn i den statistiske testen får vi "
-  s += "\( \hat{a} = " + a_hat + "\) og ";
-  s += "\( \hat{b} = " + b_hat + "\)";
-  s += "Dette gir: "
-  s += "$$ \hat{y} = \hat{a}x+\hat{b} = " + a_hat + "x" + "+" + b_hat + "$$";
-  
-  s += "Vi får også at \( se(a_hat)*t = " + se * t_value + " \), dette betyr at";
-  s += "$$ a = " + a_hat + " \pm " + se * t_value + " $$";
-  s += "Som gir et intevall: \( " + a_hat_min + "\le a \le " + a_hat_max + "\)";
-  if (a_hat_min > 0) {
-    s += "Altså stiger temperaturen med 95 % sikkerhet";
-  } else {
-    s += "Altså er vi usikkre på om temperaturen stiger eller ikke.";
-  }
-  // Sjekke om a_hat er større enn null, og skrive ut hva det betyr, ellers skrive ut hva som skjer om a_hat er mindre enn null.
-  // må finne ut hvordan jeg skal hatte ting. 
-  // Skrive en fummy text for dette!
-  return s;
-}
-function updateGraph(index) {
-  console.log("this happens on click");
-  console.log(index);
-}
-  </script>
-  
   <script>
   data = d3.csv("\\data\\data.csv", function(data) {
   var width = 500;
@@ -149,87 +96,7 @@ function updateGraph(index) {
       .x(function(d) {return x(d.year);})
       .y(function(d) {return y(d.temp)});
       
-      
-    svg.selectAll(".line")
-      .data(data)
-      .enter()
-        .append("path")
-        .style("fill", "none")
-        .style("stroke","black")
-        .style("stroke-width", "5")
-        .attr("d",valueline);
-        
-    svg.selectAll(".circle")
-      .data([].concat.apply([], data))
-      .enter()
-        .append("circle")
-        .attr("cx", function(d) {return x(d.year)})
-        .attr("cy", function(d) {return y(d.temp)})
-        .attr("r","5")
-        .style("fill", "yellow")
-        .style("stroke","black")
-        .style("stroke-width", "10");
-        
-    svg.selectAll(".text")
-      .data(data)
-      .enter()
-        .append("text")
-        .attr("x", function(d) {return x(d[0].year);})
-        .attr("y", function(d) {return y(d[0].temp);})
-        .attr("font-size", "30px")
-        .text(function(d) {return months[d[0].month-1]});
-        
-  
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-      
-    svg.append("text")
-      .attr("transform", "translate(" + width/2 + "," + (height + 40)+ ")")
-      .style("text-anchor","middle")
-      .text("Year");
-      
-    svg.append("g")
-      .call(d3.axisLeft(y));
-    
-    svg.append("text")
-      .attr("x",0 - (height / 2))
-      .attr("transform", "rotate(-90)")
-      .style("text-anchor","middle")
-      .text("Temperature");
-      
-    svg.append("text")
-      .attr("transform", "translate(" + width/2 + "," + (height + margin) + ")")
-      .style("text-anchor","middle")
-      .text("Grafen viser endring i temperatur for de forskjellige månedene over tid.");
-      
-    // add nav item
-    var nav = d3.select(".nav").selectAll(".li")
-        .data(data)
-        .enter()
-        .append("li")
-        .attr("class","nav-item")
-        .append("a")
-        .attr("class","nav-link")
-        .attr("id", function (d) {return months[d[0].month-1] + "-tab";})
-        .attr("data-toggle","tab")
-        .attr("href", function (d) {return "#" + months[d[0].month-1];} )
-        .attr("role", "tab")
-        .attr("aria-controls", function (d) {return months[d[0].month-1];})
-        .attr("aria-selected", "false")
-        .attr("onclick", function (d) {return "updateGraph(" + (d[0].month-1) + ")"})
-        .html(function (d) {return months[d[0].month-1];}) ;
-    
-    var pane = d3.select(".tab-content").selectAll(".div")
-      .data(data)
-      .enter()
-      .append("div")
-        .attr("class", "tab-pane fade")
-        .attr("id", function (d) {return months[d[0].month-1];})
-        .attr("role", "tabpanel")
-        .attr("aria-labelledby", function (d) {return months[d[0].month-1] + "-tab";})
-        .html(function (d) {return CalcStats(d);});
-        
+    // fortsett å skrive her
 });
       
   </script>
